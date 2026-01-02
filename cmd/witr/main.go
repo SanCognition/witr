@@ -9,11 +9,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pranshuparmar/witr/internal/output"
-	procpkg "github.com/pranshuparmar/witr/internal/proc"
-	"github.com/pranshuparmar/witr/internal/source"
-	"github.com/pranshuparmar/witr/internal/target"
-	"github.com/pranshuparmar/witr/pkg/model"
+	"github.com/SanCognition/witr/internal/output"
+	procpkg "github.com/SanCognition/witr/internal/proc"
+	"github.com/SanCognition/witr/internal/source"
+	"github.com/SanCognition/witr/internal/target"
+	"github.com/SanCognition/witr/pkg/model"
 )
 
 var version = ""
@@ -22,6 +22,13 @@ var buildDate = ""
 
 func printHelp() {
 	fmt.Println("Usage: witr [--pid N | --port N | name] [--short] [--tree] [--json] [--warnings] [--no-color] [--env] [--help] [--version]")
+	fmt.Println("       witr ps <pattern> [--sort cpu|mem|age|pid] [--json] [--watch] [--no-color]")
+	fmt.Println()
+	fmt.Println("Commands:")
+	fmt.Println("  ps <pattern>      List all processes matching pattern (e.g., 'witr ps node')")
+	fmt.Println("                    Use --watch for interactive TUI with live refresh")
+	fmt.Println()
+	fmt.Println("Flags:")
 	fmt.Println("  --pid <n>         Explain a specific PID")
 	fmt.Println("  --port <n>        Explain port usage")
 	fmt.Println("  --short           One-line summary")
@@ -44,6 +51,12 @@ func flagNeedsValue(flag string) bool {
 }
 
 func main() {
+	// Check for subcommand first
+	if len(os.Args) > 1 && os.Args[1] == "ps" {
+		runPS(os.Args[2:]) // Pass remaining args to ps handler
+		return
+	}
+
 	// Sanity check: fail build if version is not injected
 	if version == "" {
 		fmt.Fprintln(os.Stderr, "ERROR: version not set. Use -ldflags '-X main.version=...' when building.")
