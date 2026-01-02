@@ -36,3 +36,6 @@ result
 
 # Binary files
 witr
+
+# Generated artifacts
+tmp/
