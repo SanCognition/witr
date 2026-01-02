@@ -60,17 +60,18 @@ func DiscoverPIDs(pattern string) ([]int, error) {
 
 		// Match against command name
 		if strings.Contains(comm, lowerPattern) {
-			// Exclude grep-like processes
-			if !strings.Contains(comm, "grep") && !strings.Contains(comm, "witr") {
+			// Exclude grep-like processes and exact witr command
+			if !strings.Contains(comm, "grep") && comm != "witr" {
 				pids = append(pids, pid)
 				continue
 			}
 		}
 
 		// Match against full command line
+		// Use word-boundary matching for witr to avoid excluding processes like "twitter-daemon"
 		if strings.Contains(args, lowerPattern) &&
 			!strings.Contains(args, "grep") &&
-			!strings.Contains(args, "witr") {
+			!strings.Contains(args, " witr ") && !strings.HasSuffix(args, " witr") && !strings.HasPrefix(args, "witr ") {
 			pids = append(pids, pid)
 		}
 	}

@@ -87,11 +87,13 @@ func DetectNpmScript(cmdline string, workDir string) string {
 					// This avoids false positives like "vite" matching "invite"
 					cmdlineLower := strings.ToLower(cmdline)
 					mainCmdLower := strings.ToLower(mainCmd)
-					// Check for word boundary match
+					// Check for word boundary match (including start of cmdline)
 					if strings.Contains(cmdlineLower, " "+mainCmdLower+" ") ||
 						strings.HasSuffix(cmdlineLower, " "+mainCmdLower) ||
 						strings.Contains(cmdlineLower, "/"+mainCmdLower+" ") ||
-						strings.HasSuffix(cmdlineLower, "/"+mainCmdLower) {
+						strings.HasSuffix(cmdlineLower, "/"+mainCmdLower) ||
+						strings.HasPrefix(cmdlineLower, mainCmdLower+" ") ||
+						cmdlineLower == mainCmdLower {
 						return name
 					}
 				}
