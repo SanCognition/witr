@@ -93,6 +93,7 @@ func DetectNpmScript(cmdline string, workDir string) string {
 						strings.Contains(cmdlineLower, "/"+mainCmdLower+" ") ||
 						strings.HasSuffix(cmdlineLower, "/"+mainCmdLower) ||
 						strings.HasPrefix(cmdlineLower, mainCmdLower+" ") ||
+						strings.HasPrefix(cmdlineLower, mainCmdLower+"/") ||
 						cmdlineLower == mainCmdLower {
 						return name
 					}
