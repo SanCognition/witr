@@ -8,7 +8,6 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/SanCognition/witr/internal/batch"
-	procpkg "github.com/SanCognition/witr/internal/proc"
 )
 
 // renderDetailsPanel renders the right-side details panel
@@ -101,14 +100,14 @@ func (m Model) renderDetailSection(label, value string, width int) string {
 	return labelStr + "\n" + valueStr
 }
 
-// renderAncestrySection renders the process ancestry tree
+// renderAncestrySection renders the process ancestry tree using cached data
 func (m Model) renderAncestrySection(pid int, width int) string {
-	// Fetch ancestry (this is fast, cached in kernel)
-	ancestry, err := procpkg.ResolveAncestry(pid)
-	if err != nil || len(ancestry) == 0 {
+	// Use cached ancestry from details (fetched asynchronously)
+	if m.details == nil || m.details.PID != pid || len(m.details.Ancestry) == 0 {
 		return ""
 	}
 
+	ancestry := m.details.Ancestry
 	var lines []string
 	lines = append(lines, detailsLabelStyle.Render("ANCESTRY"))
 
@@ -126,7 +125,12 @@ func (m Model) renderAncestrySection(pid int, width int) string {
 		if i == len(ancestry)-1 {
 			arrow = "▸"
 		}
-		line := fmt.Sprintf("%s%s %s", indent, arrow, batch.Truncate(p.Command, width-len(indent)-4))
+		// Guard against negative/small width for Truncate
+		maxLen := width - len(indent) - 4
+		if maxLen < 4 {
+			maxLen = 4
+		}
+		line := fmt.Sprintf("%s%s %s", indent, arrow, batch.Truncate(p.Command, maxLen))
 		if i == len(ancestry)-1 {
 			// Highlight current process
 			lines = append(lines, lipgloss.NewStyle().Bold(true).Foreground(colorPrimary).Render(line))

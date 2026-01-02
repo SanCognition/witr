@@ -22,6 +22,7 @@ flowchart TD
         MatchName --> CheckLaunchd[Check Launchd<br/>Services]
         CheckLaunchd --> Ambiguous{Ambiguous?}
         Ambiguous -->|Yes| PromptUser[Prompt User<br/>to Select PID]
+        PromptUser --> PID
         Ambiguous -->|No| ExtractPID2[Extract PID]
 
         DirectPID --> PID[Target PID]

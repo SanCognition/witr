@@ -573,6 +573,6 @@ Warnings    :
 - [YARA Documentation](https://virustotal.github.io/yara/)
 - [Linux Audit Documentation](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/security_guide/chap-system_auditing)
 - [Apple Endpoint Security](https://developer.apple.com/documentation/endpointsecurity)
-- [unhide](http://www.yourkit.com/docs/ci_10/api/unhide-tcp.html)
+- [unhide](https://www.unhide-forensics.info/)
 - [chkrootkit](http://www.chkrootkit.org/)
 - [rkhunter](http://rkhunter.sourceforge.net/)

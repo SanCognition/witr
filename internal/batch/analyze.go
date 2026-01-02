@@ -207,10 +207,14 @@ func ShortenPath(path string) string {
 	return path
 }
 
-// Truncate shortens a string to maxLen characters
+// Truncate shortens a string to maxLen runes (Unicode-safe)
 func Truncate(s string, maxLen int) string {
-	if len(s) <= maxLen {
+	if maxLen < 4 {
+		maxLen = 4 // Minimum to fit "..."
+	}
+	runes := []rune(s)
+	if len(runes) <= maxLen {
 		return s
 	}
-	return s[:maxLen-3] + "..."
+	return string(runes[:maxLen-3]) + "..."
 }

@@ -78,9 +78,22 @@ func DetectNpmScript(cmdline string, workDir string) string {
 		if pkg, err := readPackageJSON(pkgPath); err == nil {
 			// Try to match cmdline against known scripts
 			for name, script := range pkg.Scripts {
-				// Check if the script command appears in the cmdline
-				if strings.Contains(cmdline, script) {
-					return name
+				// Extract the main executable from the script
+				// e.g., "vite --port 3000" -> "vite"
+				scriptParts := strings.Fields(script)
+				if len(scriptParts) > 0 {
+					mainCmd := scriptParts[0]
+					// Match if the main command appears as a separate word in cmdline
+					// This avoids false positives like "vite" matching "invite"
+					cmdlineLower := strings.ToLower(cmdline)
+					mainCmdLower := strings.ToLower(mainCmd)
+					// Check for word boundary match
+					if strings.Contains(cmdlineLower, " "+mainCmdLower+" ") ||
+						strings.HasSuffix(cmdlineLower, " "+mainCmdLower) ||
+						strings.Contains(cmdlineLower, "/"+mainCmdLower+" ") ||
+						strings.HasSuffix(cmdlineLower, "/"+mainCmdLower) {
+						return name
+					}
 				}
 			}
 		}
@@ -93,17 +106,39 @@ func DetectNpmScript(cmdline string, workDir string) string {
 	if idx := strings.LastIndex(cmdline, "node "); idx != -1 {
 		rest := cmdline[idx+5:]
 		parts := strings.Fields(rest)
-		if len(parts) > 0 {
-			file := parts[0]
-			// Skip flags
-			if strings.HasPrefix(file, "-") {
-				for _, p := range parts[1:] {
-					if !strings.HasPrefix(p, "-") {
-						file = p
-						break
-					}
-				}
+		file := ""
+		// Node flags that take an argument value
+		flagsWithArgs := map[string]bool{
+			"-r": true, "--require": true,
+			"-e": true, "--eval": true,
+			"-p": true, "--print": true,
+			"-c": true, "--check": true,
+			"--import": true, "--experimental-loader": true,
+			"--loader": true, "--input-type": true,
+			"--conditions": true, "-C": true,
+		}
+		skipNext := false
+		for _, p := range parts {
+			if skipNext {
+				skipNext = false
+				continue
 			}
+			if strings.HasPrefix(p, "-") {
+				// Check if this flag takes an argument
+				// Handle both "--require=module" and "--require module"
+				flagName := p
+				if eqIdx := strings.Index(p, "="); eqIdx != -1 {
+					flagName = p[:eqIdx]
+				}
+				if flagsWithArgs[flagName] && !strings.Contains(p, "=") {
+					skipNext = true
+				}
+				continue
+			}
+			file = p
+			break
+		}
+		if file != "" {
 			// Get just the filename if it's an absolute path
 			if filepath.IsAbs(file) {
 				file = filepath.Base(file)
@@ -112,9 +147,7 @@ func DetectNpmScript(cmdline string, workDir string) string {
 			if workDir != "" {
 				file = strings.TrimPrefix(file, workDir+"/")
 			}
-			if file != "" && !strings.HasPrefix(file, "-") {
-				return file
-			}
+			return file
 		}
 	}
 

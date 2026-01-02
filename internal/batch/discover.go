@@ -14,6 +14,11 @@ import (
 // This is fast (~20ms) - just a single ps call with pattern matching.
 // Unlike target.ResolveName, this returns ALL matches without ambiguity checks.
 func DiscoverPIDs(pattern string) ([]int, error) {
+	// Validate pattern - empty string would match ALL processes
+	if strings.TrimSpace(pattern) == "" {
+		return nil, fmt.Errorf("pattern cannot be empty")
+	}
+
 	var pids []int
 
 	lowerPattern := strings.ToLower(pattern)

@@ -5,6 +5,7 @@ package tui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/SanCognition/witr/internal/batch"
@@ -248,13 +249,22 @@ func (m Model) renderHelpBar() string {
 }
 
 // formatTimeSince formats duration since a time
-func formatTimeSince(t interface{}) string {
-	// Handle the time.Time zero value case
-	switch v := t.(type) {
-	case interface{ IsZero() bool }:
-		if v.IsZero() {
-			return "-"
-		}
+func formatTimeSince(t time.Time) string {
+	if t.IsZero() {
+		return "-"
 	}
-	return "just now"
+
+	dur := time.Since(t)
+	secs := int(dur.Seconds())
+
+	switch {
+	case secs < 5:
+		return "just now"
+	case secs < 60:
+		return fmt.Sprintf("%ds", secs)
+	case secs < 3600:
+		return fmt.Sprintf("%dm", secs/60)
+	default:
+		return fmt.Sprintf("%dh", secs/3600)
+	}
 }

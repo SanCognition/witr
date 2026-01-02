@@ -146,7 +146,7 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, m.keys.Sort):
 		// Cycle through sort fields
-		m.sortField = (m.sortField + 1) % 4
+		m.sortField = (m.sortField + 1) % NumSortFields
 		m.sortProcesses()
 		return m, nil
 	}

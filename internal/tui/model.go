@@ -9,6 +9,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/SanCognition/witr/internal/batch"
+	procpkg "github.com/SanCognition/witr/internal/proc"
 	"github.com/SanCognition/witr/pkg/model"
 )
 
@@ -20,6 +21,7 @@ const (
 	SortByMem
 	SortByAge
 	SortByPID
+	NumSortFields // Must be last - used for cycling
 )
 
 func (s SortField) String() string {
@@ -132,14 +134,21 @@ func refreshCmd(pattern string) tea.Cmd {
 	}
 }
 
-// fetchDetailsCmd fetches detailed info for a process
+// fetchDetailsCmd fetches detailed info for a process asynchronously
 func fetchDetailsCmd(pid int) tea.Cmd {
 	return func() tea.Msg {
+		ancestry, err := procpkg.ResolveAncestry(pid)
+		if err != nil {
+			return detailsMsg{
+				pid: pid,
+				err: err,
+			}
+		}
 		// TODO: Implement port detection
-		// For now, just return ancestry
 		return detailsMsg{
-			pid:   pid,
-			ports: []int{},
+			pid:      pid,
+			ancestry: ancestry,
+			ports:    []int{},
 		}
 	}
 }
